@@ -4,7 +4,7 @@ import pandas as pd
 # 讀取 CSV 檔案
 df = pd.read_csv("pay2024 (UTF-8).csv", encoding="utf-8")
 
-st.title("藥品查詢介面")
+st.title("2024 健保申報藥品數量查詢介面（測試 A 版）")
 
 # 使用者輸入主成分
 keyword = st.text_input("請輸入主成分")
@@ -19,4 +19,5 @@ if keyword:
 
     st.write("查詢結果：")
     st.dataframe(summary)
+
 
