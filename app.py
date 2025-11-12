@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # 讀取 CSV 檔案
-df = pd.read_csv("pay2024.csv", encoding="utf-8")
+df = pd.read_csv("pay2024 (UTF-8).csv", encoding="utf-8")
 
 st.title("藥品查詢介面")
 
@@ -19,3 +19,4 @@ if keyword:
 
     st.write("查詢結果：")
     st.dataframe(summary)
+
