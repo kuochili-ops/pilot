@@ -1,34 +1,65 @@
 import streamlit as st
 import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 
-# 上傳 CSV 檔案
+# Step 1: 爬取健保署資料（支援分頁）
+def get_drug_codes(keyword):
+    base_url = "https://info.nhi.gov.tw/INAE3000/INAE3000S01"
+    page = 1
+    drug_codes = []
+
+    while True:
+        payload = {
+            "ingredient": keyword,
+            "page": page
+        }
+        response = requests.post(base_url, data=payload)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        rows = soup.select("table tr")
+        if len(rows) <= 1:  # 沒有資料
+            break
+
+        for row in rows[1:]:
+            cols = [col.text.strip() for col in row.find_all("td")]
+            if len(cols) > 5:
+                drug_code = cols[0]
+                vendor = cols[4]
+                if "中國化學" in vendor or "中化裕民" in vendor:
+                    drug_codes.append(drug_code)
+
+        page += 1
+
+    return list(set(drug_codes))  # 去重
+
+# Step 2: Streamlit UI
+st.title("藥品代碼比對工具")
+
 uploaded_file = st.file_uploader("請上傳 pay2024(UTF-8).csv 檔案", type="csv")
 
 if uploaded_file is not None:
-    # 讀取 CSV
     df = pd.read_csv(uploaded_file, encoding='utf-8')
     st.write("資料預覽：")
     st.dataframe(df)
 
-    # 多關鍵字輸入
-    keywords_input = st.text_input("請輸入多個關鍵字（用逗號分隔）：").strip()
-    search_mode = st.radio("搜尋模式", ["AND", "OR"])
+    keyword = st.text_input("請輸入成分名稱：").strip()
+    if keyword:
+        st.write("正在搜尋健保署資料，請稍候...")
+        drug_codes = get_drug_codes(keyword)
+        st.write(f"找到 {len(drug_codes)} 個藥品代碼：", drug_codes)
 
-    if keywords_input:
-        keywords = [kw.strip() for kw in keywords_input.split(",") if kw.strip()]
+        # Step 3: 比對 CSV
+        result = df[df['藥品代碼'].isin(drug_codes)]
 
-        if search_mode == "AND":
-            # AND 條件：每個關鍵字都必須出現在藥品名稱中
-            mask = df['藥品名稱'].apply(lambda x: all(kw.lower() in str(x).lower() for kw in keywords))
-        else:
-            # OR 條件：只要有一個關鍵字出現在藥品名稱中
-            mask = df['藥品名稱'].apply(lambda x: any(kw.lower() in str(x).lower() for kw in keywords))
+        # Step 4: 標示紅色
+        def highlight_red(val):
+            return 'color: red' if val in drug_codes else ''
 
-        result = df[mask]
         st.write(f"查詢結果（共 {len(result)} 筆）：")
-        st.dataframe(result)
+        st.dataframe(result.style.applymap(highlight_red, subset=['藥品代碼']))
 
-        # 提供下載結果功能
+        # 提供下載結果
         csv = result.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="下載查詢結果 CSV",
