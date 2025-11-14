@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 st.title("健保藥品查詢系統")
 
 # 直接讀取本地 CSV 檔案
-file_name = "pay2024(UTF-8).csv"
+file_name = "pay2024 (UTF-8).csv"
 try:
     df = pd.read_csv(file_name, encoding='utf-8')
     st.success(f"已載入檔案：{file_name}")
@@ -71,3 +71,4 @@ if keywords_input:
         file_name="query_result.csv",
         mime="text/csv"
     )
+
