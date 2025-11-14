@@ -4,7 +4,7 @@ import pandas as pd
 st.title("健保藥品查詢系統")
 
 # 上傳 CSV 檔案
-uploaded_file = st.file_uploader("請上傳 pay2024(UTF-8).csv 檔案", type="csv")
+uploaded_file = st.file_uploader("請上傳 pay2024 (UTF-8).csv 檔案", type="csv")
 
 if uploaded_file is not None:
     # 讀取 CSV
@@ -58,3 +58,4 @@ if uploaded_file is not None:
         )
 else:
     st.info("請先上傳 CSV 檔案。")
+
